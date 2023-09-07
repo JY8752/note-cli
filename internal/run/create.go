@@ -26,8 +26,10 @@ func CreateArticleFunc(timeFlag *bool, name *string) RunEFunc {
 		t := *timeFlag
 		n := *name
 
+		// create directory name
 		var dirName string
 
+		// set timestamp in directory name
 		if t {
 			dirName = time.Now().Format("2006-01-02")
 
@@ -41,26 +43,36 @@ func CreateArticleFunc(timeFlag *bool, name *string) RunEFunc {
 			}
 		}
 
+		// set specify directory name
 		if n != "" {
 			dirName = n
 		}
 
+		// random value since nothing was specified
 		if !t && n == "" {
 			dirName = uuid.NewString()
 		}
 
+		// mkdir
 		if err := os.Mkdir(fmt.Sprintf("./%s", dirName), 0744); err != nil {
 			return err
 		}
 
 		fmt.Printf("Create directory. %s\n", dirName)
 
+		// create markdown file
 		filePath := fmt.Sprintf("./%s/%s.md", dirName, dirName)
 		if _, err := os.OpenFile(filePath, os.O_CREATE, 0644); err != nil {
 			return err
 		}
 
 		fmt.Printf("Create file. %s.md\n", dirName)
+
+		// create config.yaml
+		configFilePath := fmt.Sprintf("./%s/%s", dirName, ConfigFile)
+		if err := os.WriteFile(configFilePath, []byte("title: article title\nauthor: your name"), 0644); err != nil {
+			return err
+		}
 
 		return nil
 	}
@@ -70,17 +82,22 @@ func CreateArticleFunc(timeFlag *bool, name *string) RunEFunc {
 var templateFiles embed.FS
 
 const (
-	CustomTemplateFile    = "template.tmpl"
-	ConfigFile            = "config.yaml"
+	// custom template file name
+	CustomTemplateFile = "template.tmpl"
+	// config file name
+	ConfigFile = "config.yaml"
+	// output file name
 	DefaultOutputFileName = "output.png"
 )
 
+// Information on images to be generated
 type Ogp struct {
 	Title    string
 	IconPath string
 	Author   string
 }
 
+// config schema
 type Config struct {
 	Title  string `yaml:"title"`
 	Author string `yaml:"author"`
@@ -94,8 +111,10 @@ func CreateImageFunc(templateNo *int16, iconPath, outputPath *string) RunEFunc {
 		)
 
 		if file.Exist(CustomTemplateFile) {
+			// use custom template html
 			tmpl, err = template.ParseFiles(CustomTemplateFile)
 		} else {
+			// use template html
 			tmpl, err = template.ParseFS(templateFiles, fmt.Sprintf("templates/%d.tmpl", *templateNo))
 		}
 
@@ -103,6 +122,7 @@ func CreateImageFunc(templateNo *int16, iconPath, outputPath *string) RunEFunc {
 			return err
 		}
 
+		// if use icon, base64 encode icon
 		var encoded string
 		if *iconPath != "" {
 			b, err := os.ReadFile(*iconPath)
@@ -112,6 +132,7 @@ func CreateImageFunc(templateNo *int16, iconPath, outputPath *string) RunEFunc {
 			encoded = base64.StdEncoding.EncodeToString(b)
 		}
 
+		// read config yaml
 		var config Config
 		b, err := os.ReadFile(ConfigFile)
 		if err != nil {
@@ -128,15 +149,18 @@ func CreateImageFunc(templateNo *int16, iconPath, outputPath *string) RunEFunc {
 
 		html := buf.String()
 
+		// Open tabs in headless browser
 		page, err := rod.New().MustConnect().Page(proto.TargetCreateTarget{})
 		if err != nil {
 			return err
 		}
 
+		// set template html
 		if err = page.SetDocumentContent(html); err != nil {
 			return err
 		}
 
+		// take screenshot
 		img, err := page.MustWaitStable().Screenshot(true, &proto.PageCaptureScreenshot{
 			Format: proto.PageCaptureScreenshotFormatPng,
 			Clip: &proto.PageViewport{
@@ -153,6 +177,7 @@ func CreateImageFunc(templateNo *int16, iconPath, outputPath *string) RunEFunc {
 			return err
 		}
 
+		// output
 		if *outputPath != "" {
 			err = utils.OutputFile(*outputPath, img)
 		} else {
