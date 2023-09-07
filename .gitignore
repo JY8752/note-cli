@@ -1,0 +1,15 @@
+*
+
+!assets/
+
+!cmd/
+!internal/
+!testdata/
+
+!.gitignore
+!go.mod
+!go.sum
+!LICENSE
+!main.go
+!README.ja.md
+!README.md
