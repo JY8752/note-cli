@@ -1,10 +1,11 @@
 *
+!*/
 
-!assets/
+!assets/*
 
-!cmd/
-!internal/
-!testdata/
+!cmd/*
+!internal/**/*
+!testdata/*
 
 !.gitignore
 !go.mod
