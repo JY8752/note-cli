@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@600&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      width: 1200px;
+      height: 600px;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: rgb(222, 222, 72);
+    }
+
+    #wrapper {
+      padding: 5rem;
+      margin: 5rem;
+      background-color: rgb(173, 208, 47);
+      border-radius: 30px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.05); 
+    }
+
+    #content {
+      font-size: 40px;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-weight: bold;
+      overflow-wrap: break-word;
+    }
+
+    #sub-content {
+      margin-top: 2rem;
+      display: flex;
+      justify-content: end;
+      align-items: center;
+      font-size: 30px;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+
+    #icon {
+      margin-right: 1rem;
+      width: 75px;
+      height: 75px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <div id="wrapper">
+    <div id="content">
+      {{.Title}}
+    </div>
+    <div id="sub-content">
+      {{if .IconPath}}
+        <img id="icon" src="data:image/png;base64,{{.IconPath}}" />
+      {{end}}
+      <div>{{.Author}}</div>
+    </div>
+  </div>
+</body>
+</html>
