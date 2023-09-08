@@ -22,20 +22,20 @@ English | <a href="./README.ja.md">日本語</a>
 
 # note-cli
 
-**note-cli**は記事投稿サイトである[note](https://note.com/)の記事作成、管理をサービス上ではなく自分のローカル環境で行うためのCLIツールです。note-cliを作成したモチベーションは以下の通りです。
+**note-cli** is a CLI tool to create and manage articles on [note](https://note.com/), an article submission site, in your local environment instead of on the service. note-cli was created with the following motivation
 
-- webブラウザで開いたエディタではなく自分の好きなエディタで執筆したい。(例えば、VSCode)
-- markdown形式で執筆した記事をGitHubなどでバージョン管理したい。
-- 記事画像を用意するのがめんどくさい。(noteが用意してくれている無料の画像はあまり使いたくない)
+- I want to write in my preferred editor, not the one opened in my web browser. (For example, VSCode)
+- I want to manage the version of articles written in markdown format on GitHub, etc.
+- It is troublesome to prepare article images. (I don't want to use the free images provided by NOTE.)
 
-**note-cliはnote以外の記事管理ツールとしても使用できるはずです。例えば、自分で公開しているブログの記事管理などにも使えるでしょう。もし、足りない機能や改善点があればPull Requestまたはissueなどで気軽にお知らせください。**
+**note-cli should be able to be used as a non-note article management tool. For example, you can use it to manage articles on your own blog. If there are any missing features or improvements, please feel free to let us know via Pull Request or issue.**
 
-## note-cliでできること
+## What's note-cli
 
-- 記事をすぐに執筆できるようにmarkdownファイルを含む記事ディレクトリをコマンドで作成します。
-- 記事にアップロードするための画像をコマンドで作成することができます。
+- Create an article directory containing markdown files with the command so that articles can be written immediately.
+- Create images for uploading to articles with the command.
 
-## インストール
+## Install
 
 ```
 go install github.com/JY8752/note-cli@latest
@@ -61,16 +61,16 @@ Flags:
 Use "note-cli [command] --help" for more information about a command.
 ```
 
-## はじめに
+## Getting started
 
-1. 記事を管理するディレクトリを作成し移動します。
+1. Create and move to a directory to manage articles.
 
 ```
 mkdir note-cli-demo
 cd note-cli-demo
 ```
 
-2. 記事ディレクトリを作成します。
+2. Create article directory.
 
 ```
 % note-cli create article
@@ -87,17 +87,17 @@ Create file. config.yaml
     └── a6b420c6-9bb2-4060-869c-20c171fc9827.md
 ```
 
-- ```a6b420c6-9bb2-4060-869c-20c171fc9827.md``` 記事ファイル。ファイル名はディレクトリ名と同じで今回はランダム値(UUID)を使用しています。
-- ```config.yaml``` 設定ファイル。記事のタイトルや著者名などを設定するファイルです。
+- ```a6b420c6-9bb2-4060-869c-20c171fc9827.md``` Article file. The file name is the same as the directory name, this time using a random value (UUID).
+- ```config.yaml``` Config file. This file is used to set the title of the article, the name of the author, etc.
 
 ```yaml:config.yaml
 title: article title
 author: your name 
 ```
 
-3. 記事画像を生成する。
+3. Create article image.
 
-以下のコマンドを実行することで```output.png```が生成されます。
+The following command will generate ``output.png``.
 
 ```
 % note-cli create image
@@ -107,7 +107,7 @@ Complete generate OGP image
 
 <img src="./assets/output.png"/>
 
-アイコン画像を用意することで画像にアイコンを載せることも可能です。また、テンプレート画像は別の種類を選択することもできます。
+Icons can also be placed on the image by providing an icon image. You can also choose a different type of template image.
 
 ```
 % note-cli create image -i ./icon.png --template 2
@@ -115,20 +115,20 @@ Complete generate OGP image
 
 <img src="./assets/output2.png"/>
 
-4. まとめ
+4. Summary
 
-- ```note-cli create article```コマンドで投稿する記事ファイルとディレクトリをコマンドで作成することができます。作成したmarkdownファイルに記事を作成したらコピペしてwebから投稿してください。
+- The ``note-cli create article`` command allows you to create article files and directories for posting. Once you have created an article in the created markdown file, copy and paste it and submit it from the web.
 
-- 記事の投稿に必要な画像はOGP画像風にコマンドで作成することができます。このテンプレート画像は他の種類を選択することもできますし、独自でカスタムテンプレートを用意することもできます。
+- The image required to post an article can be created by command in the style of an OGP image. You can choose other types of this template image or prepare your own custom template.
 
-- このようにして、noteの記事を投稿するのに必要な記事ファイルと画像ファイルをコマンドから作成することができ、GitHubなどでバージョン管理をすることが可能です。
+- In this way, the article and image files needed to post a note article can be created from the command, and version control can be done at GitHub or elsewhere.
 
 ## create article
 
-```create article```コマンドを実行するとユニークなランダム値(UUID)を使用してディレクトリを作成します。ディレクトリ内には以下のファイルも併せて作成され配置されます。
+```create article``` command creates a directory with a unique random value (UUID). The following files will also be created and placed in the directory.
 
-- ```<directory name>.md``` 記事ファイル。投稿したい記事の内容をこのファイル内に書き込んでいきます。
-- ```config.yaml``` 記事や画像ファイルの生成に関する設定をこのファイルで行います。
+- ```<directory name>.md``` Article file.The content of the article you wish to submit will be written in this file.
+- ```config.yaml``` This file contains settings related to the generation of articles and image files.
 
 ### config.yaml
 
@@ -139,12 +139,12 @@ author: your name
 
 | Field | Type | Description |
 | --- | --- | --- |
-|title|string|生成する画像に載せる記事タイトル|
-|author|string|記事執筆者|
+|title|string|Article Title|
+|author|string|Article Author|
 
 ### ```--time(-t)```
 
-このフラグを付けることでデフォルトのUUIDではなく、現在時刻でディレクトリおよびファイルを作成することができます。現在時刻はコマンド実行のOSのタイムゾーンに依存し、```YYYY-mm-dd```のフォーマットで生成されます。
+This flag allows directories and files to be created with the current time instead of the default UUID. The current time depends on the time zone of the operating system under which the command is executed and is generated in the format ``YYYY-mm-dd``.
 
 ```
 % note-cli create article -t    
@@ -153,7 +153,7 @@ Create file. 2023-09-08.md
 Create file. config.yaml
 ```
 
-既にディレクトリが存在している場合、```YYYY-mm-dd-{number}```という形式でnumberをインクリメントしてディレクトリを作成します。
+If the directory already exists, it creates the directory by incrementing number in the form ``YYYY-mm-dd-{number}``.
 
 ```
 % note-cli create article -t
@@ -164,7 +164,7 @@ Create file. config.yaml
 
 ### ```--name(-n)```
 
-このフラグを付けることで任意のディレクトリ名で作成することができます。**既に指定の名前でディレクトリが存在する場合はコマンドは失敗します。**
+This flag allows you to create a directory with an arbitrary name. **If the directory already exists with the specified name, the command will fail.**
 
 ```
 % note-cli create article -n article-A
@@ -175,7 +175,7 @@ Create file. config.yaml
 
 ## create image
 
-```create image```コマンドを実行することで[OGP](https://ogp.me/)画像風の画像を生成することができます。画像の生成にはカレントディレクトリに<a href="#configyaml">config.yaml</a>が存在している必要があります。もし、config.yamlが存在していなかった場合はコマンドが失敗します。
+Image like [OGP](https://ogp.me/) can be generated by executing the ```create image``` command.The <a href="#configyaml">config.yaml</a> must exist in the current directory to generate images.If config.yaml does not exist, the command will fail.
 
 ```
 % note-cli create image
@@ -184,7 +184,7 @@ Complete generate OGP image
 
 ### ```--icon(-i)```
 
-このフラグの後にicon画像のパスを指定することで画像にアイコンを含めることができます。
+You can include an icon in an image by specifying the path of the icon image after this flag.
 
 ```
 % note-cli create image -i ./icon.png 
@@ -192,7 +192,7 @@ Complete generate OGP image
 
 ### ```--output(-o)```
 
-デフォルトではカレントディレクトリに```output.png```というファイル名で画像は出力されます。出力先を変更したい場合はこのフラグの後にパスを指定することで変更することができます。
+By default, images are output to the current directory under the file name ``output.png``. If you wish to change the output destination, you can do so by specifying the path after this flag.
 
 ```
 % note-cli create image -o ./ogp.png 
@@ -200,7 +200,7 @@ Complete generate OGP image
 
 ### ```--template```
 
-画像の生成はいくつかのテンプレートとなるHTMLファイルに必要な情報を含めて出力されます。このフラグのあとに```テンプレート番号```を指定することで使用するテンプレートファイルを変更することができます。テンプレートファイルの詳細について[こちら](./docs/templates/templates.md)。(デフォルトでは1番のテンプレートファイルが使用されます。)
+The generation of images is output in several template HTML files, including the necessary information. You can change the template file to be used by specifying ``template number`` after this flag. For more information about template files [here](/docs/templates/templates.md). (By default, template file number 1 is used.)
 
 ```
 % note-cli create image --template 2
@@ -208,14 +208,14 @@ Complete generate OGP image
 
 ### use custom template file
 
-カレントディレクトリに```template.tmpl```という名前でファイルを配置することで独自に用意したカスタムテンプレートファイルを使用することもできます。テンプレートファイルの形式は[既存のファイル](./internal/run/templates/1.tmpl)を参考にしてください。
+You can also use your own custom template files by placing a file named ``template.tmpl`` in the current directory. The format of the template file is [existing file](/internal/run/templates/1.tmpl).
 
-テンプレートファイルはGoの```template/html```パッケージを使用しています。テンプレートファイルには以下の変数を使用することができます。
+The template file uses ``template/html`` package of Go. The following variables can be used in the template file.
 
 |variable|description|
 |--------|-----------|
-|{{.Title}}|記事タイトル。この値は<a href="#configyaml">config.yaml</a>で設定した値になります。|
-|{{.IconPath}}|アイコン画像。コマンドで指定されていればbase64エンコードされたアイコン画像が値になります。|
-|{{.Author}}|著者名。この値は<a href="#configyaml">config.yaml</a>で設定した値になります。|
+|{{.Title}}|Article title. This value is set in the <a href="#configyaml">config.yaml</a>.|
+|{{.IconPath}}|Icon image. If specified in the command, the value is the base64 encoded icon image.|
+|{{.Author}}|Author name. This value is set in the <a href="#configyaml">config.yaml</a>.|
 
-**もしカスタムのテンプレートファイルを作成したならば、ぜひPull Requestを送ってください。組み込みのテンプレートファイルに追加させていただきたいです。Pull Requestの作成の仕方については[こちら](./docs/templates/templates.md)を参照ください。**
+**If you have created a custom template file, please send us a Pull Request so we can add it to the built-in template file. For instructions on how to create a Pull Request, please see [here](./docs/templates/templates.md) for instructions on how to create a Pull Request.**
