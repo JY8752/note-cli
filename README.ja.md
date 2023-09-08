@@ -75,15 +75,26 @@ cd note-cli-demo
 
 Create directory. a6b420c6-9bb2-4060-869c-20c171fc9827
 Create file. a6b420c6-9bb2-4060-869c-20c171fc9827.md
+Create file. config.yaml
 ```
 
 ```
 .
 └── a6b420c6-9bb2-4060-869c-20c171fc9827
+    ├── config.yaml
     └── a6b420c6-9bb2-4060-869c-20c171fc9827.md
+```
+
+- ```a6b420c6-9bb2-4060-869c-20c171fc9827.md``` 記事ファイル。ファイル名はディレクトリ名と同じで今回はランダム値(UUID)を使用しています。
+- ```config.yaml``` 設定ファイル。記事のタイトルや著者名などを設定するファイルです。
+
+```yaml:config.yaml
+title: article title
+author: your name 
 ```
 
 3. 記事画像を生成する。
 
 ```
+
 ```

@@ -74,6 +74,8 @@ func CreateArticleFunc(timeFlag *bool, name *string) RunEFunc {
 			return err
 		}
 
+		fmt.Print("Create file. ", ConfigFile, "\n")
+
 		return nil
 	}
 }
