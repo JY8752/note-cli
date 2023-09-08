@@ -145,9 +145,75 @@ author: your name
 このフラグを付けることでデフォルトのUUIDではなく、現在時刻でディレクトリおよびファイルを作成することができます。現在時刻はコマンド実行のOSのタイムゾーンに依存し、```YYYY-mm-dd```のフォーマットで生成されます。
 
 ```
+% note-cli create article -t    
+Create directory. 2023-09-08
+Create file. 2023-09-08.md
+Create file. config.yaml
+```
 
+既にディレクトリが存在している場合、```YYYY-mm-dd-{number}```という形式でnumberをインクリメントしてディレクトリを作成します。
+
+```
+% note-cli create article -t
+Create directory. 2023-09-08-2
+Create file. 2023-09-08-2.md
+Create file. config.yaml
 ```
 
 ### ```--name(-n)```
 
-## 画像を生成する
+このフラグを付けることで任意のディレクトリ名で作成することができます。**既に指定の名前でディレクトリが存在する場合はコマンドは失敗します。**
+
+```
+% note-cli create article -n article-A
+Create directory. article-A
+Create file. article-A.md
+Create file. config.yaml
+```
+
+## create image
+
+```create image```コマンドを実行することで[OGP](https://ogp.me/)画像風の画像を生成することができます。画像の生成にはカレントディレクトリに<a href="#configyaml">config.yaml</a>が存在している必要があります。もし、config.yamlが存在していなかった場合はコマンドが失敗します。
+
+```
+% note-cli create image
+Complete generate OGP image
+```
+
+### ```--icon(-i)```
+
+このフラグの後にicon画像のパスを指定することで画像にアイコンを含めることができます。
+
+```
+% note-cli create image -i ./icon.png 
+```
+
+### ```--output(-o)```
+
+デフォルトではカレントディレクトリに```output.png```というファイル名で画像は出力されます。出力先を変更したい場合はこのフラグの後にパスを指定することで変更することができます。
+
+```
+% note-cli create image -o ./ogp.png 
+```
+
+### ```--template```
+
+画像の生成はいくつかのテンプレートとなるHTMLファイルに必要な情報を含めて出力されます。このフラグのあとに```テンプレート番号```を指定することで使用するテンプレートファイルを変更することができます。テンプレートファイルの詳細について[こちら](./docs/templates/templates.md)。(デフォルトでは1番のテンプレートファイルが使用されます。)
+
+```
+% note-cli create image --template 2
+```
+
+### use custom template file
+
+カレントディレクトリに```template.tmpl```という名前でファイルを配置することで独自に用意したカスタムテンプレートファイルを使用することもできます。テンプレートファイルの形式は[既存のファイル](./internal/run/templates/1.tmpl)を参考にしてください。
+
+テンプレートファイルはGoの```template/html```パッケージを使用しています。テンプレートファイルには以下の変数を使用することができます。
+
+|variable|description|
+|--------|-----------|
+|{{.Title}}|記事タイトル。この値は<a href="#configyaml">config.yaml</a>で設定した値になります。|
+|{{.IconPath}}|アイコン画像。コマンドで指定されていればbase64エンコードされたアイコン画像が値になります。|
+|{{.Author}}|著者名。この値は<a href="#configyaml">config.yaml</a>で設定した値になります。|
+
+**もしカスタムのテンプレートファイルを作成したならば、ぜひPull Requestを送ってください。組み込みのテンプレートファイルに追加させていただきたいです。Pull Requestの作成の仕方については[こちら](./docs/templates/templates.md)を参照ください。**

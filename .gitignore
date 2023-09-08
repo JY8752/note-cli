@@ -6,6 +6,8 @@
 !cmd/*
 !internal/**/*
 !testdata/*
+!examples/**/*
+!docs/**/*
 
 !.gitignore
 !go.mod
