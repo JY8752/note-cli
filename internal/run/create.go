@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"html/template"
 	"os"
+	"path/filepath"
 	"strconv"
-	"time"
 
+	"github.com/JY8752/note-cli/internal/clock"
 	"github.com/JY8752/note-cli/internal/file"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
@@ -21,25 +22,38 @@ import (
 
 type RunEFunc func(cmd *cobra.Command, args []string) error
 
-func CreateArticleFunc(timeFlag *bool, name *string) RunEFunc {
+type Options struct {
+	BasePath       string
+	DefaultDirName string
+}
+
+type Option func(*Options)
+
+func CreateArticleFunc(timeFlag *bool, name *string, options ...Option) RunEFunc {
 	return func(cmd *cobra.Command, args []string) error {
 		t := *timeFlag
 		n := *name
+
+		// set option
+		var op Options
+		for _, option := range options {
+			option(&op)
+		}
 
 		// create directory name
 		var dirName string
 
 		// set timestamp in directory name
 		if t {
-			dirName = time.Now().Format("2006-01-02")
+			dirName = clock.Now().Format("2006-01-02")
 
 			counter := 1
 			for {
-				if !file.Exist(dirName) {
+				if !file.Exist(filepath.Join(op.BasePath, dirName)) {
 					break
 				}
 				counter++
-				dirName = time.Now().Format("2006-01-02") + "-" + strconv.Itoa(counter)
+				dirName = clock.Now().Format("2006-01-02") + "-" + strconv.Itoa(counter)
 			}
 		}
 
@@ -50,31 +64,36 @@ func CreateArticleFunc(timeFlag *bool, name *string) RunEFunc {
 
 		// random value since nothing was specified
 		if !t && n == "" {
-			dirName = uuid.NewString()
+			if op.DefaultDirName != "" {
+				dirName = op.DefaultDirName
+			} else {
+				dirName = uuid.NewString()
+			}
 		}
 
 		// mkdir
-		if err := os.Mkdir(fmt.Sprintf("./%s", dirName), 0744); err != nil {
+		targetDir := filepath.Join(op.BasePath, dirName)
+		if err := os.Mkdir(targetDir, 0744); err != nil {
 			return err
 		}
 
-		fmt.Printf("Create directory. %s\n", dirName)
+		fmt.Printf("Create directory. %s\n", targetDir)
 
 		// create markdown file
-		filePath := fmt.Sprintf("./%s/%s.md", dirName, dirName)
+		filePath := filepath.Join(targetDir, fmt.Sprintf("%s.md", dirName))
 		if _, err := os.OpenFile(filePath, os.O_CREATE, 0644); err != nil {
 			return err
 		}
 
-		fmt.Printf("Create file. %s.md\n", dirName)
+		fmt.Printf("Create file. %s\n", filePath)
 
 		// create config.yaml
-		configFilePath := fmt.Sprintf("./%s/%s", dirName, ConfigFile)
+		configFilePath := filepath.Join(targetDir, ConfigFile)
 		if err := os.WriteFile(configFilePath, []byte("title: article title\nauthor: your name"), 0644); err != nil {
 			return err
 		}
 
-		fmt.Print("Create file. ", ConfigFile, "\n")
+		fmt.Print("Create file. ", configFilePath, "\n")
 
 		return nil
 	}
