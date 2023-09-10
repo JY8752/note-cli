@@ -124,16 +124,21 @@ type Config struct {
 	Author string `yaml:"author"`
 }
 
-func CreateImageFunc(templateNo *int16, iconPath, outputPath *string) RunEFunc {
+func CreateImageFunc(templateNo *int16, iconPath, outputPath *string, options ...Option) RunEFunc {
 	return func(cmd *cobra.Command, args []string) error {
 		var (
 			tmpl *template.Template
 			err  error
 		)
 
-		if file.Exist(CustomTemplateFile) {
+		var op Options
+		for _, option := range options {
+			option(&op)
+		}
+
+		if file.Exist(filepath.Join(op.BasePath, CustomTemplateFile)) {
 			// use custom template html
-			tmpl, err = template.ParseFiles(CustomTemplateFile)
+			tmpl, err = template.ParseFiles(filepath.Join(op.BasePath, CustomTemplateFile))
 		} else {
 			// use template html
 			tmpl, err = template.ParseFS(templateFiles, fmt.Sprintf("templates/%d.tmpl", *templateNo))
@@ -155,7 +160,7 @@ func CreateImageFunc(templateNo *int16, iconPath, outputPath *string) RunEFunc {
 
 		// read config yaml
 		var config Config
-		b, err := os.ReadFile(ConfigFile)
+		b, err := os.ReadFile(filepath.Join(op.BasePath, ConfigFile))
 		if err != nil {
 			return err
 		}
@@ -202,7 +207,7 @@ func CreateImageFunc(templateNo *int16, iconPath, outputPath *string) RunEFunc {
 		if *outputPath != "" {
 			err = utils.OutputFile(*outputPath, img)
 		} else {
-			err = utils.OutputFile(DefaultOutputFileName, img)
+			err = utils.OutputFile(filepath.Join(op.BasePath, DefaultOutputFileName), img)
 		}
 
 		if err != nil {
