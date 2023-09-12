@@ -16,3 +16,8 @@
 !main.go
 !README.ja.md
 !README.md
+
+!.goreleaser.yaml
+
+!.github/*
+!.github/**/*
