@@ -39,7 +39,10 @@ changelog:
       - '^docs:'
       - '^test:'
 
-# The lines beneath this are called `modelines`. See `:help modeline`
-# Feel free to remove those if you don't want/use them.
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+brews:
+  - tap:
+      owner: JY8752
+      name: homebrew-tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    homepage: https://github.com/JY8752/note-cli
+    description: note-cli is a CLI command tool for creating, writing, and managing note articles
