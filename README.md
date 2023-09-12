@@ -37,8 +37,16 @@ English | <a href="./README.ja.md">日本語</a>
 
 ## Install
 
+### Go install
+
 ```
 go install github.com/JY8752/note-cli@latest
+```
+
+### Homebrew
+
+```
+brew install JY8752/tap/note-cli
 ```
 
 ```

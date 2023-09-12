@@ -37,8 +37,16 @@ Note CLI tool!!
 
 ## インストール
 
+### Go install
+
 ```
 go install github.com/JY8752/note-cli@latest
+```
+
+### Homebrew
+
+```
+brew install JY8752/tap/note-cli
 ```
 
 ```
