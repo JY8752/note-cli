@@ -1,20 +1,27 @@
 package file_test
 
 import (
-	"log"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/JY8752/note-cli/internal/file"
 )
+
+func removeDir(dir string) {
+	for i := 0; i < 10; i++ {
+		if err := os.RemoveAll(dir); err == nil {
+			return
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+}
 
 func TestExist(t *testing.T) {
 	tmpdir := t.TempDir()
 
 	t.Cleanup(func() {
-		if err := os.RemoveAll(tmpdir); err != nil {
-			log.Fatal(err)
-		}
+		removeDir(tmpdir)
 	})
 
 	if err := os.Mkdir(tmpdir+"/dir", 0777); err != nil {
