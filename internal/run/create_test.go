@@ -1,6 +1,7 @@
 package run_test
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -17,6 +18,12 @@ func TestCreateArticleFunc(t *testing.T) {
 	t.Parallel()
 
 	tmpDir := t.TempDir()
+
+	t.Cleanup(func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			log.Fatal(err)
+		}
+	})
 
 	testcases := []struct {
 		name                   string
