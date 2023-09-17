@@ -1,7 +1,6 @@
 package file_test
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -12,18 +11,20 @@ import (
 func TestExist(t *testing.T) {
 	tmpdir := t.TempDir()
 
-	t.Cleanup(func() {
-		if err := os.RemoveAll(tmpdir); err != nil {
-			log.Fatal(err)
-		}
-	})
-
 	if err := os.Mkdir(filepath.Join(tmpdir, "dir"), 0777); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := os.OpenFile(filepath.Join(tmpdir, "dir", "test.txt"), os.O_CREATE, 0777); err != nil {
+
+	f, err := os.OpenFile(filepath.Join(tmpdir, "dir", "test.txt"), os.O_CREATE, 0777)
+	if err != nil {
 		t.Fatal(err)
 	}
+
+	t.Cleanup(func() {
+		if err := f.Close(); err != nil {
+			t.Fatal(err)
+		}
+	})
 
 	testcases := []struct {
 		name string
