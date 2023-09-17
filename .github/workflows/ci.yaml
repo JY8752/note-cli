@@ -10,19 +10,21 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
         - uses: actions/checkout@v4
+        # Go module cache
+        - name: Cache Go modules
+          uses: actions/cache@v2
+          with:
+            path: |
+              ~/go/pkg/mod
+              ~/go/bin/*
+            key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+            restore-keys: |
+              ${{ runner.os }}-go-
         # goのセットアップ
         - name: Set up golang
           uses: actions/setup-go@v4
           with:
             go-version: '>=1.20'
-        # キャッシュの設定
-        - name: Cache staticcheck
-          uses: actions/cache@v2
-          with:
-            path: ~/go/bin/staticcheck
-            key: ${{ runner.os }}-staticcheck-${{ hashFiles('**/go.sum') }}
-            restore-keys: |
-              ${{ runner.os }}-staticcheck-
         # staticcheckインストール
         - name: Install staticcheck
           run: |
