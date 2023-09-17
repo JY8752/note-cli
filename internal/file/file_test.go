@@ -14,7 +14,7 @@ func TestExist(t *testing.T) {
 	if err := os.Mkdir(filepath.Join(tmpdir, "dir"), 0777); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := os.OpenFile(filepath.Join(tmpdir+"dir"+"test.txt"), os.O_CREATE, 0777); err != nil {
+	if _, err := os.OpenFile(filepath.Join(tmpdir, "dir", "test.txt"), os.O_CREATE, 0777); err != nil {
 		t.Fatal(err)
 	}
 
