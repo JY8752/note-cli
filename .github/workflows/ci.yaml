@@ -10,6 +10,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
         - uses: actions/checkout@v4
+        # goのセットアップ
+        - name: Set up golang
+          uses: actions/setup-go@v4
+          with:
+            go-version: '>=1.20'
         # Go module cache
         - name: Cache Go modules
           uses: actions/cache@v2
@@ -20,11 +25,6 @@ jobs:
             key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
             restore-keys: |
               ${{ runner.os }}-go-
-        # goのセットアップ
-        - name: Set up golang
-          uses: actions/setup-go@v4
-          with:
-            go-version: '>=1.20'
         # staticcheckインストール
         - name: Install staticcheck
           run: |
