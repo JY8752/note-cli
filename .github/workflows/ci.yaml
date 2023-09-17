@@ -15,9 +15,21 @@ jobs:
           uses: actions/setup-go@v4
           with:
             go-version: '>=1.20'
+        # キャッシュの設定
+        - name: Cache staticcheck
+          uses: actions/cache@v2
+          with:
+            path: ~/go/bin/staticcheck
+            key: ${{ runner.os }}-staticcheck-${{ hashFiles('**/go.sum') }}
+            restore-keys: |
+              ${{ runner.os }}-staticcheck-
         # staticcheckインストール
         - name: Install staticcheck
-          run: go install honnef.co/go/tools/cmd/staticcheck@latest
+          run: |
+            if ! command -v staticcheck &> /dev/null
+            then
+              go install honnef.co/go/tools/cmd/staticcheck@latest
+            fi
         # build
         - name: Build
           run: go build
