@@ -1,6 +1,7 @@
 package file_test
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,6 +11,12 @@ import (
 
 func TestExist(t *testing.T) {
 	tmpdir := t.TempDir()
+
+	t.Cleanup(func() {
+		if err := os.RemoveAll(tmpdir); err != nil {
+			log.Fatal(err)
+		}
+	})
 
 	if err := os.Mkdir(filepath.Join(tmpdir, "dir"), 0777); err != nil {
 		t.Fatal(err)
