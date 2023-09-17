@@ -2,32 +2,19 @@ package file_test
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/JY8752/note-cli/internal/file"
 )
 
-func removeDir(dir string) {
-	for i := 0; i < 10; i++ {
-		if err := os.RemoveAll(dir); err == nil {
-			return
-		}
-		time.Sleep(100 * time.Millisecond)
-	}
-}
-
 func TestExist(t *testing.T) {
 	tmpdir := t.TempDir()
 
-	t.Cleanup(func() {
-		removeDir(tmpdir)
-	})
-
-	if err := os.Mkdir(tmpdir+"/dir", 0777); err != nil {
+	if err := os.Mkdir(filepath.Join(tmpdir, "dir"), 0777); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := os.OpenFile(tmpdir+"/dir/test.txt", os.O_CREATE, 0777); err != nil {
+	if _, err := os.OpenFile(filepath.Join(tmpdir+"dir"+"test.txt"), os.O_CREATE, 0777); err != nil {
 		t.Fatal(err)
 	}
 
@@ -38,22 +25,22 @@ func TestExist(t *testing.T) {
 	}{
 		{
 			"file is exist",
-			tmpdir + "/dir/test.txt",
+			filepath.Join(tmpdir, "dir", "test.txt"),
 			true,
 		},
 		{
 			"file is not exist",
-			tmpdir + "/dir/test2.txt",
+			filepath.Join(tmpdir, "dir", "test2.txt"),
 			false,
 		},
 		{
 			"directory is exist",
-			tmpdir + "/dir",
+			filepath.Join(tmpdir, "dir"),
 			true,
 		},
 		{
 			"directory is not exist",
-			tmpdir + "/dir2",
+			filepath.Join(tmpdir, "dir2"),
 			false,
 		},
 	}
