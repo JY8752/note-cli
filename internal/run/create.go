@@ -30,7 +30,7 @@ type Options struct {
 type Option func(*Options)
 
 func CreateArticleFunc(timeFlag *bool, name *string, options ...Option) RunEFunc {
-	return func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) (err error) {
 		t := *timeFlag
 		n := *name
 
@@ -73,7 +73,7 @@ func CreateArticleFunc(timeFlag *bool, name *string, options ...Option) RunEFunc
 
 		// mkdir
 		targetDir := filepath.Join(op.BasePath, dirName)
-		if err := os.Mkdir(targetDir, 0744); err != nil {
+		if err = os.Mkdir(targetDir, 0744); err != nil {
 			return err
 		}
 
@@ -81,7 +81,13 @@ func CreateArticleFunc(timeFlag *bool, name *string, options ...Option) RunEFunc
 
 		// create markdown file
 		filePath := filepath.Join(targetDir, fmt.Sprintf("%s.md", dirName))
-		if _, err := os.OpenFile(filePath, os.O_CREATE, 0644); err != nil {
+		f, err := os.OpenFile(filePath, os.O_CREATE, 0644)
+		defer func() {
+			if err = f.Close(); err != nil {
+				fmt.Printf("failed close file. file: %s\n", filePath)
+			}
+		}()
+		if err != nil {
 			return err
 		}
 
@@ -89,7 +95,7 @@ func CreateArticleFunc(timeFlag *bool, name *string, options ...Option) RunEFunc
 
 		// create config.yaml
 		configFilePath := filepath.Join(targetDir, ConfigFile)
-		if err := os.WriteFile(configFilePath, []byte("title: article title\nauthor: your name"), 0644); err != nil {
+		if err = os.WriteFile(configFilePath, []byte("title: article title\nauthor: your name"), 0644); err != nil {
 			return err
 		}
 
