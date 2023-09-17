@@ -30,6 +30,7 @@ jobs:
             then
               go install honnef.co/go/tools/cmd/staticcheck@latest
             fi
+          shell: bash # Windows環境考慮
         # build
         - name: Build
           run: go build
