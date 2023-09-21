@@ -10,8 +10,8 @@ var rootCmd = &cobra.Command{
 	Use:   "note-cli",
 	Short: "note-cli is a CLI command tool for creating, writing, and managing note articles",
 	Long:  `note-cli is a CLI command tool for creating, writing, and managing note articles`,
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return cmd.Root().Help()
 	},
 }
 
