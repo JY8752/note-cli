@@ -9,6 +9,7 @@ var imageCmd = &cobra.Command{
 	Use:   "image",
 	Short: "Create title image.",
 	Long:  `Create title image`,
+	Args:  cobra.NoArgs,
 	RunE:  run.CreateImageFunc(&templateNo, &iconPath, &outputPath),
 }
 
