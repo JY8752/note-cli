@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"html/template"
 	"os"
@@ -29,7 +30,7 @@ type Options struct {
 
 type Option func(*Options)
 
-func CreateArticleFunc(timeFlag *bool, name *string, options ...Option) RunEFunc {
+func CreateArticleFunc(timeFlag *bool, name, author *string, options ...Option) RunEFunc {
 	return func(cmd *cobra.Command, args []string) (err error) {
 		t := *timeFlag
 		n := *name
@@ -44,8 +45,9 @@ func CreateArticleFunc(timeFlag *bool, name *string, options ...Option) RunEFunc
 		var dirName string
 
 		// set timestamp in directory name
+		now := clock.Now().Format("2006-01-02")
 		if t {
-			dirName = clock.Now().Format("2006-01-02")
+			dirName = now
 
 			counter := 1
 			for {
@@ -53,7 +55,7 @@ func CreateArticleFunc(timeFlag *bool, name *string, options ...Option) RunEFunc
 					break
 				}
 				counter++
-				dirName = clock.Now().Format("2006-01-02") + "-" + strconv.Itoa(counter)
+				dirName = now + "-" + strconv.Itoa(counter)
 			}
 		}
 
@@ -74,32 +76,27 @@ func CreateArticleFunc(timeFlag *bool, name *string, options ...Option) RunEFunc
 		// mkdir
 		targetDir := filepath.Join(op.BasePath, dirName)
 		if err = os.Mkdir(targetDir, 0744); err != nil {
-			return err
+			return
 		}
 
 		fmt.Printf("Create directory. %s\n", targetDir)
 
 		// create markdown file
 		filePath := filepath.Join(targetDir, fmt.Sprintf("%s.md", dirName))
-		f, err := os.OpenFile(filePath, os.O_CREATE, 0644)
-		defer func() {
-			if err = f.Close(); err != nil {
-				fmt.Printf("failed close file. file: %s\n", filePath)
-			}
-		}()
-		if err != nil {
-			return err
+
+		metadata := fmt.Sprintf(`---
+title: ""
+tags: []
+date: "%s"
+author: "%s"
+---
+`, now, *author)
+
+		if err = os.WriteFile(filePath, []byte(metadata), 0644); err != nil {
+			return
 		}
 
 		fmt.Printf("Create file. %s\n", filePath)
-
-		// create config.yaml
-		configFilePath := filepath.Join(targetDir, ConfigFile)
-		if err = os.WriteFile(configFilePath, []byte("title: article title\nauthor: your name"), 0644); err != nil {
-			return err
-		}
-
-		fmt.Print("Create file. ", configFilePath, "\n")
 
 		return nil
 	}
@@ -111,7 +108,7 @@ var templateFiles embed.FS
 const (
 	// custom template file name
 	CustomTemplateFile = "template.tmpl"
-	// config file name
+	// config file
 	ConfigFile = "config.yaml"
 	// output file name
 	DefaultOutputFileName = "output.png"
@@ -126,8 +123,10 @@ type Ogp struct {
 
 // config schema
 type Config struct {
-	Title  string `yaml:"title"`
-	Author string `yaml:"author"`
+	Title  string   `yaml:"title"`
+	Tags   []string `yaml:"tags"`
+	Date   string   `yaml:"date"`
+	Author string   `yaml:"author"`
 }
 
 func CreateImageFunc(templateNo *int16, iconPath, outputPath *string, options ...Option) RunEFunc {
@@ -164,12 +163,40 @@ func CreateImageFunc(templateNo *int16, iconPath, outputPath *string, options ..
 			encoded = base64.StdEncoding.EncodeToString(b)
 		}
 
-		// read config yaml
 		var config Config
-		b, err := os.ReadFile(filepath.Join(op.BasePath, ConfigFile))
+
+		// read markdown file from current directry
+		files, err := os.ReadDir(".")
 		if err != nil {
 			return err
 		}
+
+		var b []byte
+		for _, f := range files {
+			if filepath.Ext(f.Name()) == ".md" {
+				markdownPath := filepath.Join(op.BasePath, f.Name())
+				markdownFile, err := os.Open(markdownPath)
+				if err != nil {
+					return err
+				}
+				defer markdownFile.Close()
+
+				// extract metadata config
+				if b, err = file.Extract(markdownFile, "---", "---"); err == nil {
+					break
+				}
+				fmt.Println(err.Error())
+			}
+		}
+
+		if len(b) == 0 {
+			// If the config could not be loaded, look for config.yaml.
+			// config.yaml is already obsolete and should be loaded for compatibility.
+			if b, err = os.ReadFile(filepath.Join(op.BasePath, ConfigFile)); err != nil {
+				return errors.New("not found article config")
+			}
+		}
+
 		yaml.Unmarshal(b, &config)
 
 		var buf bytes.Buffer

@@ -85,23 +85,23 @@ cd note-cli-demo
 
 Create directory. a6b420c6-9bb2-4060-869c-20c171fc9827
 Create file. a6b420c6-9bb2-4060-869c-20c171fc9827.md
-Create file. config.yaml
 ```
 
 ```
 .
 └── a6b420c6-9bb2-4060-869c-20c171fc9827
-    ├── config.yaml
     └── a6b420c6-9bb2-4060-869c-20c171fc9827.md
 ```
 
 - ```a6b420c6-9bb2-4060-869c-20c171fc9827.md``` 記事ファイル。ファイル名はディレクトリ名と同じで今回はランダム値(UUID)を使用しています。
-- ```config.yaml``` 設定ファイル。記事のタイトルや著者名などを設定するファイルです。
+- ~~```config.yaml``` 設定ファイル。記事のタイトルや著者名などを設定するファイルです。~~
 
 ```yaml:config.yaml
 title: article title
 author: your name 
 ```
+
+**config.yamlは廃止しました。記事タイトルや著者名などの設定情報は記事markdownファイルのメタデータとして記載するように変更されています。**
 
 3. 記事画像を生成する。
 
@@ -136,9 +136,9 @@ Complete generate OGP image
 ```create article```コマンドを実行するとユニークなランダム値(UUID)を使用してディレクトリを作成します。ディレクトリ内には以下のファイルも併せて作成され配置されます。
 
 - ```<directory name>.md``` 記事ファイル。投稿したい記事の内容をこのファイル内に書き込んでいきます。
-- ```config.yaml``` 記事や画像ファイルの生成に関する設定をこのファイルで行います。
+- ~~```config.yaml``` 記事や画像ファイルの生成に関する設定をこのファイルで行います。~~
 
-### config.yaml
+### ~~config.yaml~~
 
 ```yaml
 title: article title
@@ -150,6 +150,26 @@ author: your name
 |title|string|生成する画像に載せる記事タイトル|
 |author|string|記事執筆者|
 
+### \<directory name>.md
+
+マークダウンファイルは以下のようなメタデータを持ちます。画像の出力には```title```と```author```の項目が使用されます。
+
+```yaml:article.md
+---
+title: ""
+tags: []
+date: "2023-09-29"
+author: ""
+---
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+|title|string|生成する画像に載せる記事タイトル|
+|tags|[]string|記事に紐づけるタグ|
+|date|string|ファイル作成日|
+|author|string|記事執筆者|
+
 ### ```--time(-t)```
 
 このフラグを付けることでデフォルトのUUIDではなく、現在時刻でディレクトリおよびファイルを作成することができます。現在時刻はコマンド実行のOSのタイムゾーンに依存し、```YYYY-mm-dd```のフォーマットで生成されます。
@@ -158,7 +178,6 @@ author: your name
 % note-cli create article -t    
 Create directory. 2023-09-08
 Create file. 2023-09-08.md
-Create file. config.yaml
 ```
 
 既にディレクトリが存在している場合、```YYYY-mm-dd-{number}```という形式でnumberをインクリメントしてディレクトリを作成します。
@@ -167,7 +186,6 @@ Create file. config.yaml
 % note-cli create article -t
 Create directory. 2023-09-08-2
 Create file. 2023-09-08-2.md
-Create file. config.yaml
 ```
 
 ### ```--name(-n)```
@@ -178,12 +196,31 @@ Create file. config.yaml
 % note-cli create article -n article-A
 Create directory. article-A
 Create file. article-A.md
-Create file. config.yaml
+```
+
+### ```--author(-a)```
+
+このフラグを付けることで記事著者名を事前に渡すことができます。
+
+```
+% go run main.go create article -a Yamanaka.J
+Create directory. cc4ab85a-2aa7-48a6-8472-3b36ef4778fa
+Create file. cc4ab85a-2aa7-48a6-8472-3b36ef4778fa/cc4ab85a-2aa7-48a6-8472-3b36ef4778fa.md
+
+% cat cc4ab85a-2aa7-48a6-8472-3b36ef4778fa/cc4ab85a-2aa7-48a6-8472-3b36ef4778fa.md 
+---
+title: ""
+tags: []
+date: "2023-09-29"
+author: "Yamanaka.J"
+---
 ```
 
 ## create image
 
-```create image```コマンドを実行することで[OGP](https://ogp.me/)画像風の画像を生成することができます。画像の生成にはカレントディレクトリに<a href="#configyaml">config.yaml</a>が存在している必要があります。もし、config.yamlが存在していなかった場合はコマンドが失敗します。
+```create image```コマンドを実行することで[OGP](https://ogp.me/)画像風の画像を生成することができます。~~画像の生成にはカレントディレクトリに<a href="#configyaml">config.yaml</a>が存在している必要があります。もし、config.yamlが存在していなかった場合はコマンドが失敗します。~~
+
+**config.yamlは廃止となっています。代わりに、markdownファイルのメタデータが存在している必要があります。メタデータを読み取ることができなかった場合、互換性を保つためにconfig.yamlを探し、それでもなければコマンドは失敗します。**
 
 ```
 % note-cli create image

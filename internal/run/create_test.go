@@ -16,82 +16,79 @@ import (
 func TestCreateArticleFunc(t *testing.T) {
 	t.Parallel()
 
-	tmpDir := t.TempDir()
+	clock.Now = func() time.Time { return time.Date(2023, 9, 9, 12, 0, 0, 0, time.Local) }
+	nowStr := "2023-09-09"
 
 	testcases := []struct {
 		name                   string
 		timeFlag               bool
 		dirName                string
+		author                 string
 		want                   string
 		wantErr                bool
 		createDuplicateDirName string
-		setTestTime            func() time.Time
 	}{
 		{
-			"default case",
-			false,
-			"",
-			"test",
-			false,
-			"",
-			nil,
+			name:                   "default case",
+			timeFlag:               false,
+			dirName:                "",
+			author:                 "author",
+			want:                   "test",
+			wantErr:                false,
+			createDuplicateDirName: "",
 		},
 		{
-			"specify dirName",
-			false,
-			"article",
-			"article",
-			false,
-			"",
-			nil,
+			name:                   "specify dirName",
+			timeFlag:               false,
+			dirName:                "article",
+			author:                 "author",
+			want:                   "article",
+			wantErr:                false,
+			createDuplicateDirName: "",
 		},
 		{
-			"specify time flag",
-			true,
-			"",
-			"2023-09-09",
-			false,
-			"",
-			func() time.Time { return time.Date(2023, 9, 9, 12, 0, 0, 0, time.Local) },
+			name:                   "specify time flag",
+			timeFlag:               true,
+			dirName:                "",
+			author:                 "author",
+			want:                   "2023-09-09",
+			wantErr:                false,
+			createDuplicateDirName: "",
 		},
 		{
-			"both name and time flag", // Flags are grouped so that both flags are never done together.
-			true,
-			"article2",
-			"article2",
-			false,
-			"",
-			nil,
+			name:                   "both name and time flag", // Flags are grouped so that both flags are never done together.
+			timeFlag:               true,
+			dirName:                "article2",
+			author:                 "author",
+			want:                   "article2",
+			wantErr:                false,
+			createDuplicateDirName: "",
 		},
 		{
-			"when duplicate directory exist, specify directory name",
-			false,
-			"article3",
-			"",
-			true,
-			"article3",
-			nil,
+			name:                   "when duplicate directory exist, specify directory name",
+			timeFlag:               false,
+			dirName:                "article3",
+			author:                 "author",
+			want:                   "",
+			wantErr:                true,
+			createDuplicateDirName: "article3",
 		},
 		{
-			"when duplicate directory exist, timestamp directory name",
-			true,
-			"",
-			"2023-09-10-2",
-			false,
-			"2023-09-10",
-			func() time.Time { return time.Date(2023, 9, 10, 12, 0, 0, 0, time.Local) },
+			name:                   "when duplicate directory exist, timestamp directory name",
+			timeFlag:               true,
+			dirName:                "",
+			author:                 "author",
+			want:                   "2023-09-09-2",
+			wantErr:                false,
+			createDuplicateDirName: "2023-09-09",
 		},
 	}
 
 	for _, testcase := range testcases {
 		testcase := testcase
 		t.Run(testcase.name, func(t *testing.T) {
-			// t.Parallel()
-
-			// set test time
-			if testcase.setTestTime != nil {
-				clock.Now = testcase.setTestTime
-			}
+			t.Parallel()
+			tmpDir := t.TempDir()
 
 			// create duplicate dir
 			if testcase.createDuplicateDirName != "" && !file.Exist(filepath.Join(tmpDir, testcase.createDuplicateDirName)) {
@@ -102,6 +99,7 @@ func TestCreateArticleFunc(t *testing.T) {
 			err := run.CreateArticleFunc(
 				&testcase.timeFlag,
 				&testcase.dirName,
+				&testcase.author,
 				func(o *run.Options) { o.BasePath = tmpDir },
 				func(o *run.Options) { o.DefaultDirName = "test" },
 			)(nil, nil)
@@ -124,16 +122,12 @@ func TestCreateArticleFunc(t *testing.T) {
 				t.Errorf("directory is not exist. want: %s\n", testcase.want)
 			}
 
-			if !file.Exist(filepath.Join(tmpDir, testcase.want, testcase.want+".md")) {
+			markdownPath := filepath.Join(tmpDir, testcase.want, testcase.want+".md")
+			if !file.Exist(markdownPath) {
 				t.Errorf("markdown file is not exist. want: %s\n", filepath.Join(tmpDir, testcase.want, testcase.want+".md"))
 			}
 
-			configPath := filepath.Join(tmpDir, testcase.want, "config.yaml")
-			if !file.Exist(configPath) {
-				t.Errorf("config file is not exist. want: %s\n", configPath)
-			}
-
-			b, err := os.ReadFile(configPath)
+			b, err := os.ReadFile(markdownPath)
 			if err != nil {
 				t.Error(err)
 			}
@@ -143,9 +137,9 @@ func TestCreateArticleFunc(t *testing.T) {
 				t.Error(err)
 			}
 
-			expectConfig := run.Config{Title: "article title", Author: "your name"}
+			expectConfig := run.Config{Date: nowStr, Author: testcase.author, Tags: []string{}}
 			if !reflect.DeepEqual(config, expectConfig) {
-				t.Errorf("config.yaml content are not expected. expect: %v act: %v\n", expectConfig, config)
+				t.Errorf("config content are not expected. expect: %v act: %v\n", expectConfig, config)
 			}
 		})
 	}
