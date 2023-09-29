@@ -29,7 +29,7 @@ type Options struct {
 
 type Option func(*Options)
 
-func CreateArticleFunc(timeFlag *bool, name, author *string, options ...Option) RunEFunc {
+func CreateArticleFunc(timeFlag, noDirFlag *bool, name, author *string, options ...Option) RunEFunc {
 	return func(cmd *cobra.Command, args []string) (err error) {
 		t := *timeFlag
 		n := *name
@@ -40,48 +40,57 @@ func CreateArticleFunc(timeFlag *bool, name, author *string, options ...Option) 
 			option(&op)
 		}
 
-		// create directory name
-		var dirName string
+		// create target name
+		var targetName string
 
-		// set timestamp in directory name
+		// set timestamp in targert name
 		now := clock.Now().Format("2006-01-02")
 		if t {
-			dirName = now
+			targetName = now
 
 			counter := 1
 			for {
-				if !file.Exist(filepath.Join(op.BasePath, dirName)) {
+				if !file.Exist(filepath.Join(op.BasePath, targetName)) {
 					break
 				}
 				counter++
-				dirName = now + "-" + strconv.Itoa(counter)
+				targetName = now + "-" + strconv.Itoa(counter)
 			}
 		}
 
-		// set specify directory name
+		// set specify name in target name
 		if n != "" {
-			dirName = n
+			if file.Exist(filepath.Join(op.BasePath, n)) && !*noDirFlag {
+				return fmt.Errorf("already exist article directory. name: %s", n)
+			}
+			if file.Exist(filepath.Join(op.BasePath, n+".md")) && *noDirFlag {
+				return fmt.Errorf("already exist article file. name: %s", n)
+			}
+			targetName = n
 		}
 
 		// random value since nothing was specified
 		if !t && n == "" {
 			if op.DefaultDirName != "" {
-				dirName = op.DefaultDirName
+				targetName = op.DefaultDirName
 			} else {
-				dirName = uuid.NewString()
+				targetName = uuid.NewString()
 			}
 		}
 
 		// mkdir
-		targetDir := filepath.Join(op.BasePath, dirName)
-		if err = os.Mkdir(targetDir, 0744); err != nil {
-			return
+		targetDir := op.BasePath
+		if !*noDirFlag {
+			targetDir = filepath.Join(targetDir, targetName)
+			if err = os.Mkdir(targetDir, 0744); err != nil {
+				return
+			}
+
+			fmt.Printf("Create directory. %s\n", targetDir)
 		}
 
-		fmt.Printf("Create directory. %s\n", targetDir)
-
 		// create markdown file
-		filePath := filepath.Join(targetDir, fmt.Sprintf("%s.md", dirName))
+		filePath := filepath.Join(targetDir, fmt.Sprintf("%s.md", targetName))
 
 		metadata := fmt.Sprintf(`---
 title: ""
