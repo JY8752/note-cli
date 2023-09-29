@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"embed"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"html/template"
 	"os"
@@ -185,7 +184,6 @@ func CreateImageFunc(templateNo *int16, iconPath, outputPath *string, options ..
 				if b, err = file.Extract(markdownFile, "---", "---"); err == nil {
 					break
 				}
-				fmt.Println(err.Error())
 			}
 		}
 
@@ -193,7 +191,7 @@ func CreateImageFunc(templateNo *int16, iconPath, outputPath *string, options ..
 			// If the config could not be loaded, look for config.yaml.
 			// config.yaml is already obsolete and should be loaded for compatibility.
 			if b, err = os.ReadFile(filepath.Join(op.BasePath, ConfigFile)); err != nil {
-				return errors.New("not found article config")
+				return fmt.Errorf("not found article config. %w", err)
 			}
 		}
 
