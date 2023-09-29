@@ -9,23 +9,18 @@ jobs:
   release:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # これがないとリリースを作成できない
+      contents: write
     steps:
-      # チェックアウト
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Changelog を正しく動作させるために必要
-
-      # Go をセットアップ
+          fetch-depth: 0
       - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
           cache: true
-
-      # リリース
       - uses: goreleaser/goreleaser-action@v4
         with:
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # 自動で生成されるシークレット
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}

@@ -10,35 +10,21 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
         - uses: actions/checkout@v4
-        # goのセットアップ
         - name: Set up golang
           uses: actions/setup-go@v4
           with:
-            go-version: '>=1.20'
-        # Go module cache
-        # - name: Cache Go modules
-        #   uses: actions/cache@v2
-        #   with:
-        #     path: |
-        #       ~/go/pkg/mod
-        #       ~/go/bin/*
-        #     key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        #     restore-keys: |
-        #       ${{ runner.os }}-go-
-        # staticcheckインストール
+            go-version-file: go.mod
+            cache: true
         - name: Install staticcheck
           run: |
             if ! command -v staticcheck &> /dev/null
             then
               go install honnef.co/go/tools/cmd/staticcheck@latest
             fi
-          shell: bash # Windows環境考慮
-        # build
+          shell: bash
         - name: Build
           run: go build
-        # test
         - name: Test
           run: go test ./...
-        # 静的解析
         - name: Staticcheck
           run: staticcheck ./...
