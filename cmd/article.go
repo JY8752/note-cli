@@ -7,7 +7,7 @@ import (
 )
 
 var articleCmd = &cobra.Command{
-	Use:   "article",
+	Use:   "article [path]",
 	Short: "Create a new article directory.",
 	Long: heredoc.Doc(`
 		Create a new article directory.
@@ -15,12 +15,12 @@ var articleCmd = &cobra.Command{
 		You can also specify the -t(--time) option to make the current timestamp the file name.
 		If nothing is specified, the file is created with a unique file name by UUID.
 	`),
-	Args: cobra.NoArgs,
+	Args: cobra.ExactArgs(1),
 	RunE: run.CreateArticleFunc(&timeFlag, &noDirFlag, &name, &author),
 	Example: heredoc.Doc(`
-		note-cli create article
-		note-cli create article --name article-a
-		note-cli create article -t
+		note-cli create article .
+		note-cli create article . --name article-a
+		note-cli create article . -t
 	`),
 }
 

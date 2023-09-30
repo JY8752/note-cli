@@ -7,7 +7,7 @@ import (
 )
 
 var imageCmd = &cobra.Command{
-	Use:   "image",
+	Use:   "image [markdown file path]",
 	Short: "Create title image.",
 	Long: heredoc.Doc(`
 		Generate a title image using the title and author name provided in the article file.
@@ -15,9 +15,9 @@ var imageCmd = &cobra.Command{
 		If the article file does not exist, image generation will fail.
 	`),
 	Example: heredoc.Doc(`
-		note-cli create image --template 1 -i ./icon.png -o ./output.png
+		note-cli create image ./article.md --template 1 -i ./icon.png -o ./output.png
 	`),
-	Args: cobra.NoArgs,
+	Args: cobra.ExactArgs(1),
 	RunE: run.CreateImageFunc(&templateNo, &iconPath, &outputPath),
 }
 

@@ -135,15 +135,16 @@ func TestCreateArticleFunc(t *testing.T) {
 				os.Mkdir(filepath.Join(tmpDir, testcase.createDuplicateDirOrFileName), 0777)
 			}
 
+			args := []string{tmpDir}
+
 			// run
 			err := run.CreateArticleFunc(
 				&testcase.timeFlag,
 				&testcase.noDirFlag,
 				&testcase.targetName,
 				&testcase.author,
-				func(o *run.Options) { o.BasePath = tmpDir },
 				func(o *run.Options) { o.DefaultDirName = "test" },
-			)(nil, nil)
+			)(nil, args)
 
 			// check error
 			if testcase.wantErr {
