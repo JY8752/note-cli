@@ -1,11 +1,14 @@
 package file_test
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/JY8752/note-cli/internal/file"
+	"github.com/MakeNowJust/heredoc/v2"
 )
 
 func TestExist(t *testing.T) {
@@ -59,6 +62,89 @@ func TestExist(t *testing.T) {
 			t.Parallel()
 			if act := file.Exist(testcase.path); act != testcase.want {
 				t.Errorf("File availability is not expected. want: %v act: %v\n", testcase.want, act)
+			}
+		})
+	}
+}
+
+func TestExtract(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		content string
+		start   string
+		end     string
+		want    string
+		wantErr bool
+	}{
+		"simple: double quotation": {
+			content: `"test" xxxxxx`,
+			start:   "\"",
+			end:     "\"",
+			want:    "test",
+		},
+		"default: from --- to ---": {
+			content: heredoc.Doc(`---
+				title: ""
+				tags: []
+				date: "2023-09-30"
+				author: "Junichi.Y"
+				---
+			`),
+			start: "---",
+			end:   "---",
+			want: "\n" + heredoc.Doc(`
+				title: ""
+				tags: []
+				date: "2023-09-30"
+				author: "Junichi.Y"
+			`),
+		},
+		"error: missing start key": {
+			content: heredoc.Doc(`title: ""
+				tags: []
+				date: "2023-09-30"
+				author: "Junichi.Y"
+				---
+			`),
+			start:   "---",
+			end:     "---",
+			wantErr: true,
+		},
+		"error: missing end key": {
+			content: heredoc.Doc(`---
+				title: ""
+				tags: []
+				date: "2023-09-30"
+				author: "Junichi.Y"
+			`),
+			start:   "---",
+			end:     "---",
+			wantErr: true,
+		},
+	}
+
+	for name, tt := range tests {
+		name, tt := name, tt
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			r := strings.NewReader(tt.content)
+			b, err := file.Extract(r, tt.start, tt.end)
+
+			if tt.wantErr && err == nil {
+				t.Fatal("expect error, but not error")
+			}
+			if tt.wantErr && err != nil {
+				t.Log(err)
+				return
+			}
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !bytes.Equal(b, []byte(tt.want)) {
+				t.Errorf("extract contents are not expected. act: %s exp: %s", string(b), tt.want)
 			}
 		})
 	}

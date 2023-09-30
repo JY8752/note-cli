@@ -12,6 +12,7 @@ import (
 
 	"github.com/JY8752/note-cli/internal/clock"
 	"github.com/JY8752/note-cli/internal/file"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
 	"github.com/go-rod/rod/lib/utils"
@@ -92,13 +93,13 @@ func CreateArticleFunc(timeFlag, noDirFlag *bool, name, author *string, options 
 		// create markdown file
 		filePath := filepath.Join(targetDir, fmt.Sprintf("%s.md", targetName))
 
-		metadata := fmt.Sprintf(`---
-title: ""
-tags: []
-date: "%s"
-author: "%s"
----
-`, now, *author)
+		metadata := heredoc.Docf(`---
+			title: ""
+			tags: []
+			date: "%s"
+			author: "%s"
+			---
+		`, now, *author)
 
 		if err = os.WriteFile(filePath, []byte(metadata), 0644); err != nil {
 			return
