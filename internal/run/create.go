@@ -35,6 +35,8 @@ func CreateArticleFunc(timeFlag, noDirFlag *bool, name, author *string, options 
 		t := *timeFlag
 		n := *name
 
+		basePath := args[0]
+
 		// set option
 		var op Options
 		for _, option := range options {
@@ -51,7 +53,7 @@ func CreateArticleFunc(timeFlag, noDirFlag *bool, name, author *string, options 
 
 			counter := 1
 			for {
-				if !file.Exist(filepath.Join(op.BasePath, targetName)) {
+				if !file.Exist(filepath.Join(basePath, targetName)) {
 					break
 				}
 				counter++
@@ -61,10 +63,10 @@ func CreateArticleFunc(timeFlag, noDirFlag *bool, name, author *string, options 
 
 		// set specify name in target name
 		if n != "" {
-			if file.Exist(filepath.Join(op.BasePath, n)) && !*noDirFlag {
+			if file.Exist(filepath.Join(basePath, n)) && !*noDirFlag {
 				return fmt.Errorf("already exist article directory. name: %s", n)
 			}
-			if file.Exist(filepath.Join(op.BasePath, n+".md")) && *noDirFlag {
+			if file.Exist(filepath.Join(basePath, n+".md")) && *noDirFlag {
 				return fmt.Errorf("already exist article file. name: %s", n)
 			}
 			targetName = n
@@ -80,7 +82,7 @@ func CreateArticleFunc(timeFlag, noDirFlag *bool, name, author *string, options 
 		}
 
 		// mkdir
-		targetDir := op.BasePath
+		targetDir := basePath
 		if !*noDirFlag {
 			targetDir = filepath.Join(targetDir, targetName)
 			if err = os.Mkdir(targetDir, 0744); err != nil {
@@ -145,14 +147,17 @@ func CreateImageFunc(templateNo *int16, iconPath, outputPath *string, options ..
 			err  error
 		)
 
+		articleFilePath := args[0]
+
 		var op Options
 		for _, option := range options {
 			option(&op)
 		}
 
-		if file.Exist(filepath.Join(op.BasePath, CustomTemplateFile)) {
+		customFilePath := filepath.Join(op.BasePath, CustomTemplateFile)
+		if file.Exist(customFilePath) {
 			// use custom template html
-			tmpl, err = template.ParseFiles(filepath.Join(op.BasePath, CustomTemplateFile))
+			tmpl, err = template.ParseFiles(customFilePath)
 		} else {
 			// use template html
 			tmpl, err = template.ParseFS(templateFiles, fmt.Sprintf("templates/%d.tmpl", *templateNo))
@@ -174,27 +179,17 @@ func CreateImageFunc(templateNo *int16, iconPath, outputPath *string, options ..
 
 		var config Config
 
-		// read markdown file from current directry
-		files, err := os.ReadDir(".")
+		// read markdown file
+		article, err := os.Open(articleFilePath)
 		if err != nil {
 			return err
 		}
+		defer article.Close()
 
+		// extract metadata config
 		var b []byte
-		for _, f := range files {
-			if filepath.Ext(f.Name()) == ".md" {
-				markdownPath := filepath.Join(op.BasePath, f.Name())
-				markdownFile, err := os.Open(markdownPath)
-				if err != nil {
-					return err
-				}
-				defer markdownFile.Close()
-
-				// extract metadata config
-				if b, err = file.Extract(markdownFile, "---", "---"); err == nil {
-					break
-				}
-			}
+		if b, err = file.Extract(article, "---", "---"); err != nil {
+			fmt.Println(err.Error())
 		}
 
 		if len(b) == 0 {

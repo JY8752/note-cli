@@ -122,6 +122,12 @@ func TestExtract(t *testing.T) {
 			end:     "---",
 			wantErr: true,
 		},
+		"error: empty content": {
+			content: "",
+			start:   "---",
+			end:     "---",
+			wantErr: true,
+		},
 	}
 
 	for name, tt := range tests {

@@ -22,10 +22,15 @@ func Extract(r io.Reader, start, end string) ([]byte, error) {
 	// extract content
 	startBytes := []byte(start)
 	endBytes := []byte(end)
+
 	startIndex := bytes.Index(b, startBytes)
+	if startIndex == -1 {
+		return nil, fmt.Errorf("could not find start keyword. start: %s", start)
+	}
+
 	endIndex := bytes.Index(b[startIndex+len(startBytes):], endBytes)
-	if startIndex == -1 || endIndex == -1 {
-		return nil, fmt.Errorf("could not find target content. start: %s end: %s", start, end)
+	if endIndex == -1 {
+		return nil, fmt.Errorf("could not find end keyword. end: %s", end)
 	}
 
 	return b[startIndex+len(startBytes) : startIndex+len(startBytes)+endIndex], nil

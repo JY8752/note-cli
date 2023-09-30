@@ -2,23 +2,26 @@ package cmd
 
 import (
 	"github.com/JY8752/note-cli/internal/run"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 )
 
 var articleCmd = &cobra.Command{
-	Use:   "article",
+	Use:   "article [path]",
 	Short: "Create a new article directory.",
-	Long: `
-Create a new article directory.
-If you want to specify directory and file names, specify them as --name(-n) options.
-You can also specify the -t(--time) option to make the current timestamp the file name.
-If nothing is specified, the file is created with a unique file name by UUID.
-	`,
-	Args: cobra.NoArgs,
+	Long: heredoc.Doc(`
+		Create a new article directory.
+		If you want to specify directory and file names, specify them as --name(-n) options.
+		You can also specify the -t(--time) option to make the current timestamp the file name.
+		If nothing is specified, the file is created with a unique file name by UUID.
+	`),
+	Args: cobra.ExactArgs(1),
 	RunE: run.CreateArticleFunc(&timeFlag, &noDirFlag, &name, &author),
-	Example: `note-cli create article
-note-cli create article --name article-a
-note-cli create article -t`,
+	Example: heredoc.Doc(`
+		note-cli create article .
+		note-cli create article . --name article-a
+		note-cli create article . -t
+	`),
 }
 
 var (
