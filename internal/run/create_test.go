@@ -20,67 +20,104 @@ func TestCreateArticleFunc(t *testing.T) {
 	nowStr := "2023-09-09"
 
 	testcases := []struct {
-		name                   string
-		timeFlag               bool
-		dirName                string
-		author                 string
-		want                   string
-		wantErr                bool
-		createDuplicateDirName string
+		name                         string
+		timeFlag                     bool
+		noDirFlag                    bool
+		targetName                   string
+		author                       string
+		want                         string
+		wantErr                      bool
+		createDuplicateDirOrFileName string
 	}{
 		{
-			name:                   "default case",
-			timeFlag:               false,
-			dirName:                "",
-			author:                 "author",
-			want:                   "test",
-			wantErr:                false,
-			createDuplicateDirName: "",
+			name:                         "default case",
+			timeFlag:                     false,
+			noDirFlag:                    false,
+			targetName:                   "",
+			author:                       "author",
+			want:                         "test",
+			wantErr:                      false,
+			createDuplicateDirOrFileName: "",
 		},
 		{
-			name:                   "specify dirName",
-			timeFlag:               false,
-			dirName:                "article",
-			author:                 "author",
-			want:                   "article",
-			wantErr:                false,
-			createDuplicateDirName: "",
+			name:                         "specify dirName",
+			timeFlag:                     false,
+			noDirFlag:                    false,
+			targetName:                   "article",
+			author:                       "author",
+			want:                         "article",
+			wantErr:                      false,
+			createDuplicateDirOrFileName: "",
 		},
 		{
-			name:                   "specify time flag",
-			timeFlag:               true,
-			dirName:                "",
-			author:                 "author",
-			want:                   "2023-09-09",
-			wantErr:                false,
-			createDuplicateDirName: "",
+			name:                         "specify time flag",
+			timeFlag:                     true,
+			noDirFlag:                    false,
+			targetName:                   "",
+			author:                       "author",
+			want:                         "2023-09-09",
+			wantErr:                      false,
+			createDuplicateDirOrFileName: "",
 		},
 		{
-			name:                   "both name and time flag", // Flags are grouped so that both flags are never done together.
-			timeFlag:               true,
-			dirName:                "article2",
-			author:                 "author",
-			want:                   "article2",
-			wantErr:                false,
-			createDuplicateDirName: "",
+			name:                         "both name and time flag", // Flags are grouped so that both flags are never done together.
+			timeFlag:                     true,
+			noDirFlag:                    false,
+			targetName:                   "article2",
+			author:                       "author",
+			want:                         "article2",
+			wantErr:                      false,
+			createDuplicateDirOrFileName: "",
 		},
 		{
-			name:                   "when duplicate directory exist, specify directory name",
-			timeFlag:               false,
-			dirName:                "article3",
-			author:                 "author",
-			want:                   "",
-			wantErr:                true,
-			createDuplicateDirName: "article3",
+			name:                         "when duplicate directory exist, specify directory name",
+			timeFlag:                     false,
+			noDirFlag:                    false,
+			targetName:                   "article3",
+			author:                       "author",
+			want:                         "",
+			wantErr:                      true,
+			createDuplicateDirOrFileName: "article3",
 		},
 		{
-			name:                   "when duplicate directory exist, timestamp directory name",
-			timeFlag:               true,
-			dirName:                "",
-			author:                 "author",
-			want:                   "2023-09-09-2",
-			wantErr:                false,
-			createDuplicateDirName: "2023-09-09",
+			name:                         "when duplicate directory exist, timestamp directory name",
+			timeFlag:                     true,
+			noDirFlag:                    false,
+			targetName:                   "",
+			author:                       "author",
+			want:                         "2023-09-09-2",
+			wantErr:                      false,
+			createDuplicateDirOrFileName: "2023-09-09",
+		},
+		{
+			name:                         "default, when no directory",
+			timeFlag:                     false,
+			noDirFlag:                    true,
+			targetName:                   "",
+			author:                       "author",
+			want:                         "test",
+			wantErr:                      false,
+			createDuplicateDirOrFileName: "",
+		},
+		{
+			name:                         "timestamp, when no directory",
+			timeFlag:                     true,
+			noDirFlag:                    true,
+			targetName:                   "",
+			author:                       "author",
+			want:                         "2023-09-09",
+			wantErr:                      false,
+			createDuplicateDirOrFileName: "",
+		},
+		{
+			name:                         "specific file name, when no directory",
+			timeFlag:                     false,
+			noDirFlag:                    true,
+			targetName:                   "article",
+			author:                       "author",
+			want:                         "article",
+			wantErr:                      false,
+			createDuplicateDirOrFileName: "",
 		},
 	}
 
@@ -91,14 +128,18 @@ func TestCreateArticleFunc(t *testing.T) {
 			tmpDir := t.TempDir()
 
 			// create duplicate dir
-			if testcase.createDuplicateDirName != "" && !file.Exist(filepath.Join(tmpDir, testcase.createDuplicateDirName)) {
-				os.Mkdir(filepath.Join(tmpDir, testcase.createDuplicateDirName), 0777)
+			if testcase.createDuplicateDirOrFileName != "" {
+				if testcase.noDirFlag {
+					os.Create(filepath.Join(tmpDir, testcase.createDuplicateDirOrFileName))
+				}
+				os.Mkdir(filepath.Join(tmpDir, testcase.createDuplicateDirOrFileName), 0777)
 			}
 
 			// run
 			err := run.CreateArticleFunc(
 				&testcase.timeFlag,
-				&testcase.dirName,
+				&testcase.noDirFlag,
+				&testcase.targetName,
 				&testcase.author,
 				func(o *run.Options) { o.BasePath = tmpDir },
 				func(o *run.Options) { o.DefaultDirName = "test" },
@@ -107,34 +148,39 @@ func TestCreateArticleFunc(t *testing.T) {
 			// check error
 			if testcase.wantErr {
 				if err == nil {
-					t.Error("want error, but not error.\n")
+					t.Fatal("want error, but not error.\n")
 				} else {
 					return
 				}
 			} else {
 				if err != nil {
-					t.Error(err)
+					t.Fatal(err)
 				}
 			}
 
 			// assertion
-			if !file.Exist(filepath.Join(tmpDir, testcase.want)) {
-				t.Errorf("directory is not exist. want: %s\n", testcase.want)
+			if !testcase.noDirFlag && !file.Exist(filepath.Join(tmpDir, testcase.want)) {
+				t.Fatalf("directory is not exist. want: %s\n", testcase.want)
 			}
 
-			markdownPath := filepath.Join(tmpDir, testcase.want, testcase.want+".md")
+			var markdownPath string
+			if testcase.noDirFlag {
+				markdownPath = filepath.Join(tmpDir, testcase.want+".md")
+			} else {
+				markdownPath = filepath.Join(tmpDir, testcase.want, testcase.want+".md")
+			}
 			if !file.Exist(markdownPath) {
-				t.Errorf("markdown file is not exist. want: %s\n", filepath.Join(tmpDir, testcase.want, testcase.want+".md"))
+				t.Fatalf("markdown file is not exist. want: %s\n", markdownPath)
 			}
 
 			b, err := os.ReadFile(markdownPath)
 			if err != nil {
-				t.Error(err)
+				t.Fatal(err)
 			}
 
 			var config run.Config
 			if err = yaml.Unmarshal(b, &config); err != nil {
-				t.Error(err)
+				t.Fatal(err)
 			}
 
 			expectConfig := run.Config{Date: nowStr, Author: testcase.author, Tags: []string{}}

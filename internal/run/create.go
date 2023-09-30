@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"embed"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"html/template"
 	"os"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/JY8752/note-cli/internal/clock"
 	"github.com/JY8752/note-cli/internal/file"
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
 	"github.com/go-rod/rod/lib/utils"
@@ -30,7 +30,7 @@ type Options struct {
 
 type Option func(*Options)
 
-func CreateArticleFunc(timeFlag *bool, name, author *string, options ...Option) RunEFunc {
+func CreateArticleFunc(timeFlag, noDirFlag *bool, name, author *string, options ...Option) RunEFunc {
 	return func(cmd *cobra.Command, args []string) (err error) {
 		t := *timeFlag
 		n := *name
@@ -41,56 +41,65 @@ func CreateArticleFunc(timeFlag *bool, name, author *string, options ...Option) 
 			option(&op)
 		}
 
-		// create directory name
-		var dirName string
+		// create target name
+		var targetName string
 
-		// set timestamp in directory name
+		// set timestamp in targert name
 		now := clock.Now().Format("2006-01-02")
 		if t {
-			dirName = now
+			targetName = now
 
 			counter := 1
 			for {
-				if !file.Exist(filepath.Join(op.BasePath, dirName)) {
+				if !file.Exist(filepath.Join(op.BasePath, targetName)) {
 					break
 				}
 				counter++
-				dirName = now + "-" + strconv.Itoa(counter)
+				targetName = now + "-" + strconv.Itoa(counter)
 			}
 		}
 
-		// set specify directory name
+		// set specify name in target name
 		if n != "" {
-			dirName = n
+			if file.Exist(filepath.Join(op.BasePath, n)) && !*noDirFlag {
+				return fmt.Errorf("already exist article directory. name: %s", n)
+			}
+			if file.Exist(filepath.Join(op.BasePath, n+".md")) && *noDirFlag {
+				return fmt.Errorf("already exist article file. name: %s", n)
+			}
+			targetName = n
 		}
 
 		// random value since nothing was specified
 		if !t && n == "" {
 			if op.DefaultDirName != "" {
-				dirName = op.DefaultDirName
+				targetName = op.DefaultDirName
 			} else {
-				dirName = uuid.NewString()
+				targetName = uuid.NewString()
 			}
 		}
 
 		// mkdir
-		targetDir := filepath.Join(op.BasePath, dirName)
-		if err = os.Mkdir(targetDir, 0744); err != nil {
-			return
+		targetDir := op.BasePath
+		if !*noDirFlag {
+			targetDir = filepath.Join(targetDir, targetName)
+			if err = os.Mkdir(targetDir, 0744); err != nil {
+				return
+			}
+
+			fmt.Printf("Create directory. %s\n", targetDir)
 		}
 
-		fmt.Printf("Create directory. %s\n", targetDir)
-
 		// create markdown file
-		filePath := filepath.Join(targetDir, fmt.Sprintf("%s.md", dirName))
+		filePath := filepath.Join(targetDir, fmt.Sprintf("%s.md", targetName))
 
-		metadata := fmt.Sprintf(`---
-title: ""
-tags: []
-date: "%s"
-author: "%s"
----
-`, now, *author)
+		metadata := heredoc.Docf(`---
+			title: ""
+			tags: []
+			date: "%s"
+			author: "%s"
+			---
+		`, now, *author)
 
 		if err = os.WriteFile(filePath, []byte(metadata), 0644); err != nil {
 			return
@@ -185,7 +194,6 @@ func CreateImageFunc(templateNo *int16, iconPath, outputPath *string, options ..
 				if b, err = file.Extract(markdownFile, "---", "---"); err == nil {
 					break
 				}
-				fmt.Println(err.Error())
 			}
 		}
 
@@ -193,7 +201,7 @@ func CreateImageFunc(templateNo *int16, iconPath, outputPath *string, options ..
 			// If the config could not be loaded, look for config.yaml.
 			// config.yaml is already obsolete and should be loaded for compatibility.
 			if b, err = os.ReadFile(filepath.Join(op.BasePath, ConfigFile)); err != nil {
-				return errors.New("not found article config")
+				return fmt.Errorf("not found article config. %w", err)
 			}
 		}
 
