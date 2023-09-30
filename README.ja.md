@@ -81,7 +81,7 @@ cd note-cli-demo
 2. 記事ディレクトリを作成します。
 
 ```
-% note-cli create article
+% note-cli create article .
 
 Create directory. a6b420c6-9bb2-4060-869c-20c171fc9827
 Create file. a6b420c6-9bb2-4060-869c-20c171fc9827.md
@@ -108,7 +108,7 @@ author: your name
 以下のコマンドを実行することで```output.png```が生成されます。
 
 ```
-% note-cli create image
+% note-cli create image ./a6b420c6-9bb2-4060-869c-20c171fc9827.md
 
 Complete generate OGP image
 ```
@@ -118,7 +118,7 @@ Complete generate OGP image
 アイコン画像を用意することで画像にアイコンを載せることも可能です。また、テンプレート画像は別の種類を選択することもできます。
 
 ```
-% note-cli create image -i ./icon.png --template 2
+% note-cli create image ./a6b420c6-9bb2-4060-869c-20c171fc9827.md -i ./icon.png --template 2
 ```
 
 <img src="./assets/output2.png"/>
@@ -133,7 +133,7 @@ Complete generate OGP image
 
 ## create article
 
-```create article```コマンドを実行するとユニークなランダム値(UUID)を使用してディレクトリを作成します。ディレクトリ内には以下のファイルも併せて作成され配置されます。
+```create article```コマンドを実行するとユニークなランダム値(UUID)を使用してディレクトリを作成します。ディレクトリ内には以下のファイルも併せて作成され配置されます。引数にはディレクトリもしくはファイルの作成場所を指定します。
 
 - ```<directory name>.md``` 記事ファイル。投稿したい記事の内容をこのファイル内に書き込んでいきます。
 - ~~```config.yaml``` 記事や画像ファイルの生成に関する設定をこのファイルで行います。~~
@@ -175,7 +175,7 @@ author: ""
 このフラグを付けることでデフォルトのUUIDではなく、現在時刻でディレクトリおよびファイルを作成することができます。現在時刻はコマンド実行のOSのタイムゾーンに依存し、```YYYY-mm-dd```のフォーマットで生成されます。
 
 ```
-% note-cli create article -t    
+% note-cli create article . -t 
 Create directory. 2023-09-08
 Create file. 2023-09-08.md
 ```
@@ -183,7 +183,7 @@ Create file. 2023-09-08.md
 既にディレクトリが存在している場合、```YYYY-mm-dd-{number}```という形式でnumberをインクリメントしてディレクトリを作成します。
 
 ```
-% note-cli create article -t
+% note-cli create article . -t
 Create directory. 2023-09-08-2
 Create file. 2023-09-08-2.md
 ```
@@ -193,7 +193,7 @@ Create file. 2023-09-08-2.md
 このフラグを付けることで任意のディレクトリ名で作成することができます。**既に指定の名前でディレクトリが存在する場合はコマンドは失敗します。**
 
 ```
-% note-cli create article -n article-A
+% note-cli create article . -n article-A
 Create directory. article-A
 Create file. article-A.md
 ```
@@ -203,7 +203,7 @@ Create file. article-A.md
 このフラグを付けることで記事著者名を事前に渡すことができます。
 
 ```
-% go run main.go create article -a Yamanaka.J
+% go run main.go create article . -a Yamanaka.J
 Create directory. cc4ab85a-2aa7-48a6-8472-3b36ef4778fa
 Create file. cc4ab85a-2aa7-48a6-8472-3b36ef4778fa/cc4ab85a-2aa7-48a6-8472-3b36ef4778fa.md
 
@@ -221,7 +221,7 @@ author: "Yamanaka.J"
 このフラグを付けることでディレクトリを作成することなく、ファイルを作成します。
 
 ```
-% note-cli create article --no-dir -t
+% note-cli create article . --no-dir -t
 Create file. 2023-09-30.md
 
 % cat 2023-09-30.md 
@@ -239,10 +239,12 @@ author: ""
 
 ```create image```コマンドを実行することで[OGP](https://ogp.me/)画像風の画像を生成することができます。~~画像の生成にはカレントディレクトリに<a href="#configyaml">config.yaml</a>が存在している必要があります。もし、config.yamlが存在していなかった場合はコマンドが失敗します。~~
 
-**config.yamlは廃止となっています。代わりに、markdownファイルのメタデータが存在している必要があります。メタデータを読み取ることができなかった場合、互換性を保つためにconfig.yamlを探し、それでもなければコマンドは失敗します。**
+**config.yamlは廃止となっています。代わりに、markdownファイルのメタデータが存在している必要があります。メタデータを読み取ることができなかった場合、互換性を保つためにカレントディレクトリにあるconfig.yamlを探し、それでもなければコマンドは失敗します。**
+
+画像の生成にはメタデータが記載されているmarkdownファイルのパスをコマンドの引数に指定してください。
 
 ```
-% note-cli create image
+% note-cli create image ./article.md
 Complete generate OGP image
 ```
 
@@ -251,7 +253,7 @@ Complete generate OGP image
 このフラグの後にicon画像のパスを指定することで画像にアイコンを含めることができます。
 
 ```
-% note-cli create image -i ./icon.png 
+% note-cli create image ./article.md -i ./icon.png 
 ```
 
 ### ```--output(-o)```
@@ -259,7 +261,7 @@ Complete generate OGP image
 デフォルトではカレントディレクトリに```output.png```というファイル名で画像は出力されます。出力先を変更したい場合はこのフラグの後にパスを指定することで変更することができます。
 
 ```
-% note-cli create image -o ./ogp.png 
+% note-cli create image ./article.md -o ./ogp.png 
 ```
 
 ### ```--template```
@@ -267,7 +269,7 @@ Complete generate OGP image
 画像の生成はいくつかのテンプレートとなるHTMLファイルに必要な情報を含めて出力されます。このフラグのあとに```テンプレート番号```を指定することで使用するテンプレートファイルを変更することができます。テンプレートファイルの詳細について[こちら](./docs/templates/templates.md)。(デフォルトでは1番のテンプレートファイルが使用されます。)
 
 ```
-% note-cli create image --template 2
+% note-cli create image ./article.md --template 2
 ```
 
 ### use custom template file
