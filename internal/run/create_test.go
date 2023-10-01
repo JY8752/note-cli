@@ -1,6 +1,7 @@
 package run_test
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -189,6 +190,50 @@ func TestCreateArticleFunc(t *testing.T) {
 				t.Errorf("config content are not expected. expect: %v act: %v\n", expectConfig, config)
 			}
 		})
+	}
+}
+
+func TestDuplicateTimestampFile(t *testing.T) {
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+
+	clock.Now = func() time.Time { return time.Date(2023, 9, 9, 12, 0, 0, 0, time.Local) }
+	nowStr := "2023-09-09"
+
+	targetFilePath := filepath.Join(tmpDir, nowStr+".md")
+	if err := os.WriteFile(targetFilePath, []byte("test"), 0777); err != nil {
+		t.Fatal(err)
+	}
+
+	timeFlag := true
+	noDirFlag := true
+	targetName := ""
+	author := "Junichi.Y"
+
+	args := []string{tmpDir}
+
+	if err := run.CreateArticleFunc(
+		&timeFlag,
+		&noDirFlag,
+		&targetName,
+		&author,
+	)(nil, args); err != nil {
+		t.Fatal(err)
+	}
+
+	b, err := os.ReadFile(targetFilePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Equal(b, []byte("test")) {
+		t.Fatalf("expect file content test, but %s", string(b))
+	}
+
+	expectFileName := nowStr + "-2.md"
+	if !file.Exist(filepath.Join(tmpDir, expectFileName)) {
+		t.Errorf("not created expected file expect: %s", expectFileName)
 	}
 }
 
