@@ -53,7 +53,10 @@ func CreateArticleFunc(timeFlag, noDirFlag *bool, name, author *string, options 
 
 			counter := 1
 			for {
-				if !file.Exist(filepath.Join(basePath, targetName)) {
+				if !*noDirFlag && !file.Exist(filepath.Join(basePath, targetName)) {
+					break
+				}
+				if *noDirFlag && !file.Exist(filepath.Join(basePath, targetName+".md")) {
 					break
 				}
 				counter++
